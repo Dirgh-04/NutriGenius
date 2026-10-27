@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriGenius — Understand Your Food. Make Better Choices.</title>
+  <meta name="description" content="Personal food intelligence platform for nutritional analysis, product comparison, recipes, fruit nutrition, and meal planning.">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       Header & Navigation Bar
+       ========================================================================== -->
+  <header class="app-header">
+    <div class="nav-container">
+      <div class="brand-wrapper" data-nav-target="dashboard">
+        <div class="brand-icon">🥗</div>
+        <div>
+          <div class="brand-title">Nutri<span>Genius</span></div>
+        </div>
+      </div>
+
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item">
+            <button class="active" data-nav-target="dashboard">📊 Dashboard</button>
+          </li>
+          <li class="nav-item">
+            <button data-nav-target="food">🔍 Food Analyzer</button>
+          </li>
+          <li class="nav-item">
+            <button data-nav-target="comparison">⚖️ Comparison</button>
+          </li>
+          <li class="nav-item">
+            <button data-nav-target="recipes">🍲 Recipes</button>
+          </li>
+          <li class="nav-item">
+            <button data-nav-target="fruits">🍎 Fruits</button>
+          </li>
+          <li class="nav-item">
+            <button data-nav-target="nutrition">📝 Tracker</button>
+          </li>
+          <li class="nav-item">
+            <button data-nav-target="mealPlanner">📋 Meal Planner</button>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Live Backend Health Status Indicator -->
+        <div id="backendStatusPill" class="status-pill checking" title="Connecting to backend API...">
+          <div class="status-dot"></div>
+          <span id="backendStatusText">Connecting...</span>
+        </div>
+
+        <!-- User Authentication State Button -->
+        <button id="authNavButton" class="btn-auth-link">Sign In</button>
+
+        <!-- Mobile Menu Toggle -->
+        <button id="mobileMenuToggle" class="mobile-menu-btn" aria-label="Toggle navigation menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       Main Application Views Container
+       ========================================================================== -->
+  <main class="main-content">
+
+    <!-- Demo Data Alert Banner (Shown when demo data is loaded) -->
+    <div id="demoDataBanner" class="alert alert-info" style="display: none; justify-content: space-between; align-items: center;">
+      <div>
+        <strong>📌 Demo Mode Active:</strong> You are currently viewing sample nutritional logs.
+      </div>
+      <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="window.dashboardController.clearData()">
+        Clear Demo Data
+      </button>
+    </div>
+
+    <!-- ------------------------------------------------------------------------
+         VIEW 1: Dashboard
+         ------------------------------------------------------------------------ -->
+    <section id="view-dashboard" class="app-view active-view">
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <div class="hero-content">
+          <div class="hero-tag">✨ Personal Food Intelligence Platform</div>
+          <h1 class="hero-title">Understand Your Food.<br>Make Better Choices.</h1>
+          <p class="hero-description">
+            NutriGenius combines real food chemistry data from Open Food Facts, curated culinary recipes from TheMealDB, and raw fruit analytics from Fruityvice with custom nutrition ranking algorithms.
+          </p>
+          <div class="hero-cta-group">
+            <button class="btn-primary" data-nav-target="food">
+              🔍 Analyze a Food Product
+            </button>
+            <button class="btn-outline-white" data-nav-target="recipes">
+              🍲 Explore Healthy Recipes
+            </button>
+            <button class="btn-outline-white" style="font-size: 0.85rem;" onclick="window.dashboardController.loadDemoData()">
+              🧪 Preview Demo Statistics
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Grid -->
+      <div class="stats-grid">
+        <div class="stat-card stat-calories">
+          <div class="stat-header">
+            <span class="stat-label">Daily Calories</span>
+            <div class="stat-icon">🔥</div>
+          </div>
+          <div>
+            <span id="dashCalorieValue" class="stat-value">0</span>
+            <span class="stat-unit">/ 2000 kcal</span>
+          </div>
+          <div class="stat-progress-bar">
+            <div id="dashCalorieBar" class="stat-progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-protein">
+          <div class="stat-header">
+            <span class="stat-label">Protein</span>
+            <div class="stat-icon">💪</div>
+          </div>
+          <div>
+            <span id="dashProteinValue" class="stat-value">0</span>
+            <span class="stat-unit">/ 60 g</span>
+          </div>
+          <div class="stat-progress-bar">
+            <div id="dashProteinBar" class="stat-progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-carbs">
+          <div class="stat-header">
+            <span class="stat-label">Carbohydrates</span>
+            <div class="stat-icon">🌾</div>
+          </div>
+          <div>
+            <span id="dashCarbsValue" class="stat-value">0</span>
+            <span class="stat-unit">/ 250 g</span>
+          </div>
+          <div class="stat-progress-bar">
+            <div id="dashCarbsBar" class="stat-progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-fat">
+          <div class="stat-header">
+            <span class="stat-label">Total Fat</span>
+            <div class="stat-icon">🥑</div>
+          </div>
+          <div>
+            <span id="dashFatValue" class="stat-value">0</span>
+            <span class="stat-unit">/ 70 g</span>
+          </div>
+          <div class="stat-progress-bar">
+            <div id="dashFatBar" class="stat-progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-Column Analytics Layout -->
+      <div class="dashboard-grid">
+        <!-- Daily Macro Breakdown -->
+        <div class="dashboard-card" id="dashboardChartCard">
+          <div class="card-title-bar">
+            <h2 class="card-heading">Macronutrient Distribution</h2>
+            <span style="font-size: 0.85rem; color: var(--color-text-muted);">Today</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="nutritionChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Quick Actions & Guide -->
+        <div class="dashboard-card">
+          <div class="card-title-bar">
+            <h2 class="card-heading">Food Intelligence Tools</h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="padding: 12px; background: var(--color-surface-sunken); border-radius: var(--radius-md);">
+              <h4 style="font-size: 0.95rem; margin-bottom: 4px;">🔍 Barcode & Product Lookup</h4>
+              <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 8px;">Scan or type an EAN/UPC barcode to inspect Nutri-Score, ingredients, and nutrients.</p>
+              <button class="btn-accent" style="padding: 6px 12px; font-size: 0.825rem;" data-nav-target="food">Open Analyzer</button>
+            </div>
+
+            <div style="padding: 12px; background: var(--color-surface-sunken); border-radius: var(--radius-md);">
+              <h4 style="font-size: 0.95rem; margin-bottom: 4px;">⚖️ Nutrition Head-to-Head</h4>
+              <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 8px;">Compare two breakfast cereals, snacks, or drinks side-by-side on 100g basis.</p>
+              <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.825rem;" data-nav-target="comparison">Compare Items</button>
+            </div>
+
+            <div style="padding: 12px; background: var(--color-surface-sunken); border-radius: var(--radius-md);">
+              <h4 style="font-size: 0.95rem; margin-bottom: 4px;">🍎 Raw Fruit Chemistry</h4>
+              <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 8px;">Explore botanical taxonomy, natural sugars, fiber, and calories of fresh fruits.</p>
+              <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.825rem;" data-nav-target="fruits">Explore Fruits</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Grid Cards -->
+      <div class="view-header" style="margin-top: var(--space-2xl); margin-bottom: var(--space-md);">
+        <h3 class="view-title" style="font-size: 1.5rem;">Explore Platform Capabilities</h3>
+      </div>
+      <div class="features-grid">
+        <div class="feature-launch-card" data-nav-target="food">
+          <div class="feature-icon-badge">📦</div>
+          <h4 class="feature-title">Packaged Food Analyzer</h4>
+          <p class="feature-desc">Deep-dive into packaged products, ingredients, additives, allergens, and portion calculations powered by Open Food Facts.</p>
+          <span class="feature-link">Launch Analyzer →</span>
+        </div>
+
+        <div class="feature-launch-card" data-nav-target="comparison">
+          <div class="feature-icon-badge">⚖️</div>
+          <h4 class="feature-title">Nutritional Comparator</h4>
+          <p class="feature-desc">Side-by-side evaluation using custom transparent ranking algorithms with customizable user priorities (low sugar, high protein).</p>
+          <span class="feature-link">Compare Foods →</span>
+        </div>
+
+        <div class="feature-launch-card" data-nav-target="recipes">
+          <div class="feature-icon-badge">🍲</div>
+          <h4 class="feature-title">Culinary Recipe Finder</h4>
+          <p class="feature-desc">Discover global dishes with ingredients, measurements, and cooking instructions powered by TheMealDB.</p>
+          <span class="feature-link">Find Recipes →</span>
+        </div>
+
+        <div class="feature-launch-card" data-nav-target="fruits">
+          <div class="feature-icon-badge">🍌</div>
+          <h4 class="feature-title">Fruit Taxonomy & Nutrition</h4>
+          <p class="feature-desc">Investigate family, genus, sugars, and macronutrient profiles of dozens of fruits with Fruityvice.</p>
+          <span class="feature-link">Explore Fruits →</span>
+        </div>
+
+        <div class="feature-launch-card" data-nav-target="nutrition">
+          <div class="feature-icon-badge">📈</div>
+          <h4 class="feature-title">Daily Nutrition Tracker</h4>
+          <p class="feature-desc">Log your meals, track calories and macros over time, and persist records securely to Supabase.</p>
+          <span class="feature-link">Track Intake →</span>
+        </div>
+
+        <div class="feature-launch-card" data-nav-target="mealPlanner">
+          <div class="feature-icon-badge">🗓️</div>
+          <h4 class="feature-title">Personalized Meal Planner</h4>
+          <p class="feature-desc">Algorithm-driven meal plan generator matching your dietary preferences, avoided ingredients, and calorie targets.</p>
+          <span class="feature-link">Plan Meals →</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------------
+         VIEW 2: Food Analyzer
+         ------------------------------------------------------------------------ -->
+    <section id="view-food" class="app-view">
+      <div class="view-header">
+        <h2 class="view-title">Packaged Food Analyzer</h2>
+        <p class="view-subtitle">Powered by Open Food Facts with dynamic serving-size calculator, allergen alerts, and Nutri-Score analysis.</p>
+      </div>
+
+      <div class="dashboard-card" style="margin-bottom: var(--space-xl);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: 1rem;">
+          <!-- Barcode Lookup -->
+          <div>
+            <label class="form-label" for="foodBarcodeInput">Search by Barcode (EAN / UPC)</label>
+            <div style="display: flex; gap: 8px;">
+              <input id="foodBarcodeInput" class="form-input" type="text" placeholder="e.g. 3017620422003">
+              <button class="btn-accent" onclick="window.foodController.searchBarcode()">Lookup</button>
+            </div>
+          </div>
+
+          <!-- Keyword Search -->
+          <div>
+            <label class="form-label" for="foodKeywordInput">Search by Product Name</label>
+            <div style="display: flex; gap: 8px;">
+              <input id="foodKeywordInput" class="form-input" type="text" placeholder="e.g. Nutella, Cheerios, Oats, Yogurt">
+              <button class="btn-secondary" onclick="window.foodController.searchByKeyword()">Search</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.85rem; color: var(--color-text-muted); border-top: 1px solid var(--color-border); padding-top: 0.75rem;">
+          <span>Verified Sample Barcodes:</span>
+          <a href="javascript:void(0)" onclick="document.getElementById('foodBarcodeInput').value='3017620422003'; window.foodController.searchBarcode('3017620422003');" style="margin-left: 8px;">Nutella (3017620422003)</a> •
+          <a href="javascript:void(0)" onclick="document.getElementById('foodBarcodeInput').value='5449000000996'; window.foodController.searchBarcode('5449000000996');" style="margin-left: 8px;">Coca Cola (5449000000996)</a> •
+          <a href="javascript:void(0)" onclick="document.getElementById('foodBarcodeInput').value='737628064502'; window.foodController.searchBarcode('737628064502');" style="margin-left: 8px;">Noodles (737628064502)</a>
+        </div>
+      </div>
+
+      <!-- Results Area -->
+      <div id="foodResultArea">
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <h3 class="empty-state-title">Ready to Analyze</h3>
+          <p class="empty-state-desc">Enter a product barcode or name above, or click one of the verified sample products to inspect its full nutritional breakdown.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------------
+         VIEW 3: Product Comparison
+         ------------------------------------------------------------------------ -->
+    <section id="view-comparison" class="app-view">
+      <div class="view-header">
+        <h2 class="view-title">Product Nutrition Comparison</h2>
+        <p class="view-subtitle">Side-by-side nutritional evaluation with transparent user-weighted ranking algorithms on a standardized 100g basis.</p>
+      </div>
+
+      <!-- Priority Selection Toolbar -->
+      <div class="dashboard-card" style="margin-bottom: var(--space-lg); padding: 1rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <span style="font-weight: 700; font-size: 0.9rem;">Comparison Health Priority:</span>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn-accent" data-compare-priority="balanced" onclick="window.comparisonController.setPriority('balanced')">⚖️ Balanced</button>
+            <button class="btn-secondary" data-compare-priority="low_sugar" onclick="window.comparisonController.setPriority('low_sugar')">🍬 Lower Sugar</button>
+            <button class="btn-secondary" data-compare-priority="high_protein" onclick="window.comparisonController.setPriority('high_protein')">💪 High Protein</button>
+            <button class="btn-secondary" data-compare-priority="low_calories" onclick="window.comparisonController.setPriority('low_calories')">🔥 Low Calories</button>
+            <button class="btn-secondary" data-compare-priority="low_fat" onclick="window.comparisonController.setPriority('low_fat')">🥑 Low Sat. Fat</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Product A Slot -->
+        <div class="dashboard-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+            <h3 class="card-heading" style="margin-bottom: 0;">Product A</h3>
+            <span id="badgeSlotA" style="font-size: 0.75rem; padding: 2px 8px; border-radius: var(--radius-full); background: var(--color-surface-sunken); color: var(--color-text-muted); font-weight: 600;">Not selected</span>
+          </div>
+
+          <!-- Selection Mode: Barcode vs Product Name -->
+          <div class="compare-toggle-bar">
+            <button type="button" id="tabBarcodeA" class="compare-tab-btn active" onclick="window.comparisonController.switchMode('A', 'barcode')">
+              🏷️ By Barcode
+            </button>
+            <button type="button" id="tabNameA" class="compare-tab-btn" onclick="window.comparisonController.switchMode('A', 'name')">
+              🔍 By Product Name
+            </button>
+          </div>
+
+          <!-- Mode 1: Barcode Lookup -->
+          <div id="modeBarcodeA" class="compare-mode-box">
+            <div style="display: flex; gap: 8px; margin-bottom: 0.5rem;">
+              <input id="compareBarcodeA" class="form-input" type="text" placeholder="Barcode A (e.g. 3017620422003)" onkeydown="if(event.key==='Enter') window.comparisonController.loadBarcode('A')">
+              <button type="button" class="btn-accent" onclick="window.comparisonController.loadBarcode('A')">Load</button>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+              Presets: <a href="javascript:void(0)" onclick="window.comparisonController.loadBarcode('A', '3017620422003')">Nutella</a> | <a href="javascript:void(0)" onclick="window.comparisonController.loadBarcode('A', '737628064502')">Noodles</a> | <a href="javascript:void(0)" onclick="window.comparisonController.loadBarcode('A', '5449000000996')">Coca Cola</a>
+            </div>
+          </div>
+
+          <!-- Mode 2: Name Search -->
+          <div id="modeNameA" class="compare-mode-box" style="display: none;">
+            <div style="display: flex; gap: 8px; margin-bottom: 0.5rem;">
+              <input id="compareNameA" class="form-input" type="text" placeholder="Product name (e.g. Nutella, Oats, Yogurt)" onkeydown="if(event.key==='Enter') window.comparisonController.searchName('A')">
+              <button type="button" class="btn-accent" onclick="window.comparisonController.searchName('A')">Search</button>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 0.75rem;">
+              Suggestions: <a href="javascript:void(0)" onclick="window.comparisonController.quickSearchName('A', 'Nutella')">Nutella</a> | <a href="javascript:void(0)" onclick="window.comparisonController.quickSearchName('A', 'Oatmeal')">Oatmeal</a> | <a href="javascript:void(0)" onclick="window.comparisonController.quickSearchName('A', 'Greek Yogurt')">Yogurt</a>
+            </div>
+            <div id="compareSearchResultsA"></div>
+          </div>
+
+          <div id="compareSlotA">
+            <div class="empty-state" style="padding: 2rem;">
+              <div class="empty-state-icon">📦</div>
+              <p class="empty-state-desc">Select or lookup Product A</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product B Slot -->
+        <div class="dashboard-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+            <h3 class="card-heading" style="margin-bottom: 0;">Product B</h3>
+            <span id="badgeSlotB" style="font-size: 0.75rem; padding: 2px 8px; border-radius: var(--radius-full); background: var(--color-surface-sunken); color: var(--color-text-muted); font-weight: 600;">Not selected</span>
+          </div>
+
+          <!-- Selection Mode: Barcode vs Product Name -->
+          <div class="compare-toggle-bar">
+            <button type="button" id="tabBarcodeB" class="compare-tab-btn active" onclick="window.comparisonController.switchMode('B', 'barcode')">
+              🏷️ By Barcode
+            </button>
+            <button type="button" id="tabNameB" class="compare-tab-btn" onclick="window.comparisonController.switchMode('B', 'name')">
+              🔍 By Product Name
+            </button>
+          </div>
+
+          <!-- Mode 1: Barcode Lookup -->
+          <div id="modeBarcodeB" class="compare-mode-box">
+            <div style="display: flex; gap: 8px; margin-bottom: 0.5rem;">
+              <input id="compareBarcodeB" class="form-input" type="text" placeholder="Barcode B (e.g. 5449000000996)" onkeydown="if(event.key==='Enter') window.comparisonController.loadBarcode('B')">
+              <button type="button" class="btn-accent" onclick="window.comparisonController.loadBarcode('B')">Load</button>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+              Presets: <a href="javascript:void(0)" onclick="window.comparisonController.loadBarcode('B', '5449000000996')">Coca Cola</a> | <a href="javascript:void(0)" onclick="window.comparisonController.loadBarcode('B', '737628064502')">Noodles</a> | <a href="javascript:void(0)" onclick="window.comparisonController.loadBarcode('B', '3017620422003')">Nutella</a>
+            </div>
+          </div>
+
+          <!-- Mode 2: Name Search -->
+          <div id="modeNameB" class="compare-mode-box" style="display: none;">
+            <div style="display: flex; gap: 8px; margin-bottom: 0.5rem;">
+              <input id="compareNameB" class="form-input" type="text" placeholder="Product name (e.g. Coca Cola, Peanut Butter, Cheerios)" onkeydown="if(event.key==='Enter') window.comparisonController.searchName('B')">
+              <button type="button" class="btn-accent" onclick="window.comparisonController.searchName('B')">Search</button>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 0.75rem;">
+              Suggestions: <a href="javascript:void(0)" onclick="window.comparisonController.quickSearchName('B', 'Coca Cola')">Coca Cola</a> | <a href="javascript:void(0)" onclick="window.comparisonController.quickSearchName('B', 'Peanut Butter')">Peanut Butter</a> | <a href="javascript:void(0)" onclick="window.comparisonController.quickSearchName('B', 'Cheerios')">Cheerios</a>
+            </div>
+            <div id="compareSearchResultsB"></div>
+          </div>
+
+          <div id="compareSlotB">
+            <div class="empty-state" style="padding: 2rem;">
+              <div class="empty-state-icon">📦</div>
+              <p class="empty-state-desc">Select or lookup Product B</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side-by-side Comparative Results Container -->
+      <div id="comparisonResultBox"></div>
+    </section>
+
+    <!-- ------------------------------------------------------------------------
+         VIEW 4: Recipe Finder
+         ------------------------------------------------------------------------ -->
+    <section id="view-recipes" class="app-view">
+      <div class="view-header">
+        <h2 class="view-title">Culinary Recipe Finder</h2>
+        <p class="view-subtitle">Search delicious culinary recipes from TheMealDB by dish name or available pantry ingredients.</p>
+      </div>
+
+      <div class="dashboard-card" style="margin-bottom: var(--space-xl);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+          <div>
+            <label class="form-label" for="recipeSearchInput">Search by Dish Title</label>
+            <div style="display: flex; gap: 8px;">
+              <input id="recipeSearchInput" class="form-input" type="text" placeholder="e.g. Chicken, Arrabiata, Curry, Salmon, Soup">
+              <button class="btn-accent" onclick="window.recipeController.search()">Find Dish</button>
+            </div>
+          </div>
+          <div>
+            <label class="form-label" for="recipeIngredientInput">Filter by Main Ingredient</label>
+            <div style="display: flex; gap: 8px;">
+              <input id="recipeIngredientInput" class="form-input" type="text" placeholder="e.g. chicken_breast, garlic, tomato">
+              <button class="btn-secondary" onclick="window.recipeController.searchByIngredient()">Filter</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--color-text-muted);">
+          <span>Popular searches:</span>
+          <a href="javascript:void(0)" onclick="document.getElementById('recipeSearchInput').value='Chicken'; window.recipeController.search('Chicken');" style="margin-left: 8px;">Chicken</a> •
+          <a href="javascript:void(0)" onclick="document.getElementById('recipeSearchInput').value='Pasta'; window.recipeController.search('Pasta');" style="margin-left: 8px;">Pasta</a> •
+          <a href="javascript:void(0)" onclick="document.getElementById('recipeSearchInput').value='Curry'; window.recipeController.search('Curry');" style="margin-left: 8px;">Curry</a> •
+          <a href="javascript:void(0)" onclick="document.getElementById('recipeSearchInput').value='Salad'; window.recipeController.search('Salad');" style="margin-left: 8px;">Salad</a>
+        </div>
+      </div>
+
+      <div id="recipeResultsArea">
+        <div class="empty-state">
+          <div class="empty-state-icon">🍲</div>
+          <h3 class="empty-state-title">Find Your Next Healthy Dish</h3>
+          <p class="empty-state-desc">Search dishes above to view complete ingredient quantities, step-by-step instructions, and cooking videos.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------------
+         VIEW 5: Fruit Nutrition
+         ------------------------------------------------------------------------ -->
+    <section id="view-fruits" class="app-view">
+      <div class="view-header">
+        <h2 class="view-title">Fruit Taxonomy & Nutrition</h2>
+        <p class="view-subtitle">Raw fruit chemistry, natural sugars, calories, and taxonomy powered by Fruityvice.</p>
+      </div>
+
+      <div class="dashboard-card" style="margin-bottom: var(--space-xl);">
+        <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; margin-bottom: 1rem;">
+          <div style="flex: 1; min-width: 260px;">
+            <label class="form-label" for="fruitSearchInput">Enter Fruit Name</label>
+            <input id="fruitSearchInput" class="form-input" type="text" placeholder="e.g. Banana, Apple, Strawberry, Mango, Kiwi, Watermelon...">
+          </div>
+          <div style="display: flex; align-items: flex-end;">
+            <button class="btn-accent" onclick="window.fruitController.search()">
+              Inspect Fruit
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted);">Quick Fruit Selection:</span>
+          <div id="fruitChipsContainer" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;"></div>
+        </div>
+      </div>
+
+      <div id="fruitResultsArea">
+        <div class="empty-state">
+          <div class="empty-state-icon">🍎</div>
+          <h3 class="empty-state-title">Explore Natural Fruit Nutrition</h3>
+          <p class="empty-state-desc">Select any fruit above to explore its botanical genus, family, natural sugars, and caloric content.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------------
+         VIEW 6: Daily Nutrition Tracker
+         ------------------------------------------------------------------------ -->
+    <section id="view-nutrition" class="app-view">
+      <div class="view-header">
+        <h2 class="view-title">Daily Nutrition Tracker</h2>
+        <p class="view-subtitle">Log your meals and monitor calorie and macronutrient trends with Supabase cloud persistence.</p>
+      </div>
+
+      <!-- Date Toolbar & Summary -->
+      <div class="dashboard-card" style="margin-bottom: var(--space-xl); padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <label class="form-label" style="margin-bottom: 0;" for="trackerDateInput">Date:</label>
+            <input id="trackerDateInput" class="form-input" type="date" style="width: auto;">
+          </div>
+
+          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.9rem;">
+            <div>Calories: <strong id="trackerTotalCalories" style="color: var(--color-calories);">0 kcal</strong></div>
+            <div>Protein: <strong id="trackerTotalProtein" style="color: var(--color-protein);">0 g</strong></div>
+            <div>Carbs: <strong id="trackerTotalCarbs" style="color: var(--color-carbs);">0 g</strong></div>
+            <div>Fat: <strong id="trackerTotalFat" style="color: var(--color-fat);">0 g</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Log Entry Form -->
+      <div class="dashboard-card" style="margin-bottom: var(--space-xl);">
+        <h3 class="card-heading" style="margin-bottom: 1rem; font-size: 1.1rem;">+ Add Food Entry</h3>
+        <form onsubmit="window.nutritionTrackerController.handleFormSubmit(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; align-items: flex-end;">
+          <div style="grid-column: span 2; min-width: 200px;">
+            <label class="form-label" for="manualFoodName">Food Item Name</label>
+            <input id="manualFoodName" class="form-input" type="text" placeholder="e.g. Scrambled Eggs & Toast" required>
+          </div>
+          <div>
+            <label class="form-label" for="manualCalories">Calories (kcal)</label>
+            <input id="manualCalories" class="form-input" type="number" placeholder="280" required>
+          </div>
+          <div>
+            <label class="form-label" for="manualProtein">Protein (g)</label>
+            <input id="manualProtein" class="form-input" type="number" step="0.1" placeholder="14">
+          </div>
+          <div>
+            <label class="form-label" for="manualCarbs">Carbs (g)</label>
+            <input id="manualCarbs" class="form-input" type="number" step="0.1" placeholder="22">
+          </div>
+          <div>
+            <label class="form-label" for="manualFat">Fat (g)</label>
+            <input id="manualFat" class="form-input" type="number" step="0.1" placeholder="8">
+          </div>
+          <div>
+            <label class="form-label" for="manualMealType">Meal Type</label>
+            <select id="manualMealType" class="form-input">
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="snack" selected>Snack</option>
+            </select>
+          </div>
+          <div>
+            <button type="submit" class="btn-accent" style="width: 100%; height: 42px;">Save Entry</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Food Logs Table -->
+      <div class="dashboard-card">
+        <h3 class="card-heading" style="margin-bottom: 1rem;">Logged Items for this Date</h3>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--color-border); color: var(--color-text-muted);">
+                <th style="padding: 10px;">Food Item</th>
+                <th style="padding: 10px;">Calories</th>
+                <th style="padding: 10px;">Protein</th>
+                <th style="padding: 10px;">Carbohydrates</th>
+                <th style="padding: 10px;">Fat</th>
+                <th style="padding: 10px; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="trackerLogsTableBody"></tbody>
+          </table>
+        </div>
+
+        <div id="trackerEmptyNotice" class="empty-state" style="display: none; padding: 2rem;">
+          <div class="empty-state-icon">📝</div>
+          <h4 class="empty-state-title">No entries for this date</h4>
+          <p class="empty-state-desc">Use the form above to add an item, or analyze packaged products to log them with one click.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------------
+         VIEW 7: Personalized Meal Planner
+         ------------------------------------------------------------------------ -->
+    <section id="view-mealPlanner" class="app-view">
+      <div class="view-header">
+        <h2 class="view-title">Personalized Meal Planner</h2>
+        <p class="view-subtitle">Algorithm-driven daily meal generator balancing caloric goals, dietary preferences, and ingredient exclusions.</p>
+      </div>
+
+      <div class="dashboard-card" style="margin-bottom: var(--space-xl);">
+        <h3 class="card-heading" style="margin-bottom: 1rem; font-size: 1.15rem;">Set Your Meal Preferences</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md); margin-bottom: 1rem;">
+          <div>
+            <label class="form-label" for="plannerDietarySelect">Dietary Preference</label>
+            <select id="plannerDietarySelect" class="form-input">
+              <option value="balanced" selected>Balanced</option>
+              <option value="vegetarian">Vegetarian</option>
+              <option value="low-carb">Low-Carb</option>
+              <option value="high-protein">High-Protein</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" for="plannerCalorieGoal">Target Daily Calories (kcal)</label>
+            <input id="plannerCalorieGoal" class="form-input" type="number" value="2000" min="1000" max="5000">
+          </div>
+
+          <div>
+            <label class="form-label" for="plannerMealsPerDay">Meals Per Day</label>
+            <select id="plannerMealsPerDay" class="form-input">
+              <option value="3" selected>3 Meals (Breakfast, Lunch, Dinner)</option>
+              <option value="4">4 Meals (Includes Afternoon Snack)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: 1.25rem;">
+          <div>
+            <label class="form-label" for="plannerPreferredInput">Preferred Pantry Ingredients (Comma-separated)</label>
+            <input id="plannerPreferredInput" class="form-input" type="text" placeholder="e.g. rice, garlic, olive oil, spinach">
+          </div>
+          <div>
+            <label class="form-label" for="plannerAvoidedInput">Ingredients to Avoid (Allergens / Dislikes)</label>
+            <input id="plannerAvoidedInput" class="form-input" type="text" placeholder="e.g. peanuts, pork, shellfish">
+          </div>
+        </div>
+
+        <button class="btn-accent" style="padding: 12px 24px;" onclick="window.mealPlannerController.generatePlan()">
+          ⚡ Generate Personalized Meal Plan
+        </button>
+      </div>
+
+      <div id="mealPlanResultsArea">
+        <div class="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <h3 class="empty-state-title">Ready to Plan</h3>
+          <p class="empty-state-desc">Configure your preferences above and click "Generate Personalized Meal Plan" to receive explainable dish recommendations.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       Footer & Attributions
+       ========================================================================== -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div>
+        <strong>NutriGenius</strong> — Understand Your Food. Make Better Choices.
+      </div>
+      <div class="footer-sources">
+        <span>External Data Sources:</span>
+        <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>
+        <span>•</span>
+        <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a>
+        <span>•</span>
+        <a href="https://www.fruityvice.com" target="_blank" rel="noopener">Fruityvice</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Scripts in Logical Dependency Order -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/food.js"></script>
+  <script src="js/comparison.js"></script>
+  <script src="js/recipes.js"></script>
+  <script src="js/fruits.js"></script>
+  <script src="js/nutrition.js"></script>
+  <script src="js/mealPlanner.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

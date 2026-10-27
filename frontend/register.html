@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — NutriGenius</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page">
+
+  <div class="auth-card">
+    <div class="auth-header">
+      <a href="index.html" class="auth-brand">
+        <div class="auth-brand-icon">🥗</div>
+        <div class="brand-title">Nutri<span>Genius</span></div>
+      </a>
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-subtitle">Join NutriGenius to personalize your nutrition and meal plans.</p>
+    </div>
+
+    <form class="auth-form" onsubmit="event.preventDefault(); handleRegister();">
+      <div class="form-group">
+        <label class="form-label" for="regFullName">Full Name</label>
+        <input id="regFullName" class="form-input" type="text" required placeholder="Alex Johnson">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regEmail">Email Address</label>
+        <input id="regEmail" class="form-input" type="email" required placeholder="you@example.com">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regPassword">Password</label>
+        <input id="regPassword" class="form-input" type="password" required placeholder="At least 6 characters" minlength="6">
+      </div>
+
+      <button type="submit" class="auth-btn-submit">Register</button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="login.html">Sign In</a> • <a href="index.html">Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    function handleRegister() {
+      const email = document.getElementById('regEmail').value;
+      window.authController.demoLogin(email);
+      window.location.href = 'index.html#dashboard';
+    }
+  </script>
+</body>
+</html>

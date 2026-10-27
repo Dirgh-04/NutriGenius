@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — NutriGenius</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page">
+
+  <div class="auth-card">
+    <div class="auth-header">
+      <a href="index.html" class="auth-brand">
+        <div class="auth-brand-icon">🥗</div>
+        <div class="brand-title">Nutri<span>Genius</span></div>
+      </a>
+      <h1 class="auth-title">Welcome Back</h1>
+      <p class="auth-subtitle">Sign in to sync your food logs, saved plans, and dietary preferences.</p>
+    </div>
+
+    <form class="auth-form" onsubmit="event.preventDefault(); handleFormLogin();">
+      <div class="form-group">
+        <label class="form-label" for="loginEmail">Email Address</label>
+        <input id="loginEmail" class="form-input" type="email" required placeholder="you@example.com">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="loginPassword">Password</label>
+        <input id="loginPassword" class="form-input" type="password" required placeholder="••••••••" minlength="6">
+      </div>
+
+      <button type="submit" class="auth-btn-submit">Sign In</button>
+    </form>
+
+    <div class="auth-demo-badge">
+      <strong>⚙️ Database Note:</strong> When Supabase is configured in <code>backend/.env</code>, live cloud auth is active. For offline/local evaluation, you can use the instant demo account below.
+    </div>
+
+    <button type="button" class="btn-secondary" style="width: 100%; margin-top: 10px;" onclick="handleDemoLogin()">
+      ⚡ Instant Demo Sign-In
+    </button>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="register.html">Create one</a> • <a href="index.html">Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    function handleDemoLogin() {
+      window.authController.demoLogin('student.demo@nutrigenius.local');
+      window.location.href = 'index.html#dashboard';
+    }
+
+    function handleFormLogin() {
+      const email = document.getElementById('loginEmail').value;
+      // In Stage 1: Fallback to local session if Supabase is unconfigured
+      window.authController.demoLogin(email);
+      window.location.href = 'index.html#dashboard';
+    }
+  </script>
+</body>
+</html>

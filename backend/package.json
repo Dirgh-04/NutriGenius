@@ -1,0 +1,30 @@
+{
+  "name": "nutrigenius-backend",
+  "version": "1.0.0",
+  "description": "NutriGenius - Food Intelligence Platform",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test ../tests/**/*.test.js"
+  },
+  "keywords": [
+    "nutrition",
+    "food-intelligence",
+    "express",
+    "api"
+  ],
+  "author": "NutriGenius Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "ffmpeg-static": "^5.3.0",
+    "puppeteer-core": "^25.16.0"
+  }
+}
