@@ -1,10 +1,10 @@
 /**
- * NutriGenius AI - Frontend Configuration
+ * NutriGenius — Frontend Configuration
  * Centralized settings for backend API and client environment.
  */
 const CONFIG = {
-  // Backend API base URL (configurable for local dev or production)
-  API_BASE_URL: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:' || !window.location.hostname)
+  // Backend API base URL (relative '/api' on production hosts, localhost in dev)
+  API_BASE_URL: (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
     ? 'http://localhost:3000/api'
     : '/api',
 
@@ -26,6 +26,11 @@ const CONFIG = {
     fiber: 30    // grams
   }
 };
+
+// Explicitly bind to window for global browser availability
+if (typeof window !== 'undefined') {
+  window.CONFIG = CONFIG;
+}
 
 // Make immutable in browser
 Object.freeze(CONFIG);

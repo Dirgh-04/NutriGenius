@@ -4,7 +4,15 @@
  */
 class ApiService {
   constructor(baseUrl) {
-    this.baseUrl = baseUrl || (window.CONFIG ? window.CONFIG.API_BASE_URL : 'http://localhost:3000/api');
+    if (baseUrl) {
+      this.baseUrl = baseUrl;
+    } else if (typeof window !== 'undefined' && window.CONFIG && window.CONFIG.API_BASE_URL) {
+      this.baseUrl = window.CONFIG.API_BASE_URL;
+    } else if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      this.baseUrl = 'http://localhost:3000/api';
+    } else {
+      this.baseUrl = '/api';
+    }
     this.defaultTimeoutMs = 12000;
   }
 
