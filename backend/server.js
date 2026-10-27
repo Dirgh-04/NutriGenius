@@ -68,11 +68,7 @@ if (process.env.NODE_ENV !== 'test') {
 // Dedicated API Router
 const apiRouter = express.Router();
 
-/**
- * Health Check Endpoint
- * GET /api/health (or /health)
- */
-apiRouter.get('/health', (req, res) => {
+const handleHealthCheck = (req, res) => {
   res.status(200).json({
     status: 'OK',
     message: 'NutriGenius backend is working',
@@ -80,7 +76,16 @@ apiRouter.get('/health', (req, res) => {
     uptimeSeconds: Math.floor(process.uptime()),
     environment: process.env.NODE_ENV || 'development'
   });
-});
+};
+
+/**
+ * Health Check Endpoints
+ */
+apiRouter.get('/', handleHealthCheck);
+apiRouter.get('/health', handleHealthCheck);
+app.get('/health', handleHealthCheck);
+app.get('/api/health', handleHealthCheck);
+app.get('/api', handleHealthCheck);
 
 // Mount Subroutes on API Router
 apiRouter.use('/food', foodRoutes);
@@ -100,7 +105,8 @@ app.use((req, res, next) => {
     req.path.startsWith('/fruits') ||
     req.path.startsWith('/nutrition') ||
     req.path.startsWith('/meal-plans') ||
-    req.path === '/health'
+    req.path === '/health' ||
+    req.path === '/'
   ) {
     return apiRouter(req, res, next);
   }

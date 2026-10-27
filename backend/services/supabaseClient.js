@@ -3,7 +3,12 @@
  * Manages Supabase client initialization, token authentication, and data operations with RLS.
  */
 
-const { createClient } = require('@supabase/supabase-js');
+let createClient = null;
+try {
+  createClient = require('@supabase/supabase-js').createClient;
+} catch (err) {
+  // @supabase/supabase-js is optional/lazy loaded
+}
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
@@ -12,7 +17,7 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 let supabaseClient = null;
 
 function isConfigured() {
-  return Boolean(SUPABASE_URL && (SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY));
+  return Boolean(createClient && SUPABASE_URL && (SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY));
 }
 
 function getClient() {
