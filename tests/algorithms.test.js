@@ -97,3 +97,29 @@ test('STAGE 5: Ingredient matching correctly categorizes matched, missing, and a
   assert.strictEqual(match.matchedIngredients.length, 2); // chicken breast, garlic clove
   assert.strictEqual(match.missingIngredients.length, 2); // peanuts, salt
 });
+
+test('STAGE 5: Ingredient matching and recipe ranking safely handle object ingredients from TheMealDB', () => {
+  const pantry = ['chicken', 'rice'];
+  const avoid = ['peanuts'];
+  const recipeWithObjectIngredients = {
+    id: '123',
+    name: 'Chicken Rice Bowl',
+    category: 'Chicken',
+    ingredients: [
+      { ingredient: 'Chicken Breast', measurement: '250g' },
+      { ingredient: 'White Rice', measurement: '1 cup' },
+      { ingredient: 'Soy Sauce', measurement: '1 tbsp' }
+    ]
+  };
+
+  const ranked = rankRecipes([recipeWithObjectIngredients], {
+    dietary: 'balanced',
+    pantryIngredients: pantry,
+    avoidedIngredients: avoid
+  });
+
+  assert.strictEqual(ranked.length, 1);
+  assert.strictEqual(ranked[0].name, 'Chicken Rice Bowl');
+  assert.strictEqual(ranked[0].containsAvoided, false);
+  assert.ok(ranked[0].rankingScore > 50);
+});

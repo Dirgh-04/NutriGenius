@@ -112,27 +112,40 @@ function calculateComparisonScore(productA, productB, priority = 'balanced') {
 }
 
 /**
+ * Helper to safely extract and lowercase an ingredient name from string or object
+ */
+function extractIngredientName(item) {
+  if (!item) return '';
+  if (typeof item === 'string') return item.toLowerCase().trim();
+  if (typeof item === 'object') {
+    if (typeof item.ingredient === 'string') return item.ingredient.toLowerCase().trim();
+    if (typeof item.name === 'string') return item.name.toLowerCase().trim();
+  }
+  return String(item).toLowerCase().trim();
+}
+
+/**
  * Calculates ingredient overlap between user's available pantry ingredients and a recipe's ingredient list.
  * Identifies matches, missing items, and highlights any avoided ingredients.
  * 
- * @param {Array<string>} userPantry - Ingredients the user has on hand
- * @param {Array<string>} avoidedIngredients - Ingredients the user wishes to avoid (allergens/dislikes)
- * @param {Array<string>} recipeIngredients - Ingredients required by the recipe
+ * @param {Array} userPantry - Ingredients the user has on hand
+ * @param {Array} avoidedIngredients - Ingredients the user wishes to avoid (allergens/dislikes)
+ * @param {Array} recipeIngredients - Ingredients required by the recipe (strings or objects)
  * @returns {Object} Match percentage, itemized lists, and dietary safety alert
  */
 function calculateIngredientMatch(userPantry = [], avoidedIngredients = [], recipeIngredients = []) {
-  const normalize = (str) => (str || '').toLowerCase().trim();
-
-  const pantrySet = (userPantry || []).map(normalize).filter(Boolean);
-  const avoidSet = (avoidedIngredients || []).map(normalize).filter(Boolean);
-  const recipeList = (recipeIngredients || []).map(normalize).filter(Boolean);
+  const pantrySet = (userPantry || []).map(extractIngredientName).filter(Boolean);
+  const avoidSet = (avoidedIngredients || []).map(extractIngredientName).filter(Boolean);
+  const recipeList = (recipeIngredients || []).map(extractIngredientName).filter(Boolean);
 
   if (recipeList.length === 0) {
     return {
+      recipeTotalIngredients: 0,
       matchPercentage: 0,
       matchedIngredients: [],
       missingIngredients: [],
       avoidedIngredientsFound: [],
+      containsAvoided: false,
       safetyWarning: false
     };
   }
@@ -183,18 +196,19 @@ function rankRecipes(recipes = [], preferences = {}) {
   const vegetarianKeywords = ['vegetable', 'vegan', 'salad', 'bean', 'lentil', 'rice', 'cheese', 'tofu', 'paneer', 'spinach', 'chickpea'];
   const nonVegKeywords = ['chicken', 'beef', 'pork', 'lamb', 'bacon', 'meat', 'fish', 'salmon', 'prawn', 'shrimp', 'tuna'];
 
-  return recipes.map(recipe => {
+  return (recipes || []).map(recipe => {
     let score = 50; // baseline
     const tags = [];
 
-    const recipeName = (recipe.strMeal || recipe.name || '').toLowerCase();
-    const recipeCategory = (recipe.strCategory || '').toLowerCase();
-    const ingredients = recipe.ingredients || [];
+    const recipeName = String(recipe.strMeal || recipe.name || '').toLowerCase();
+    const recipeCategory = String(recipe.strCategory || recipe.category || '').toLowerCase();
+    const rawIngredients = recipe.ingredientNames || recipe.ingredients || [];
+    const ingredients = rawIngredients.map(extractIngredientName).filter(Boolean);
 
     // 1. Dietary Preference Check
     if (dietary === 'vegetarian') {
       const containsMeat = nonVegKeywords.some(kw => 
-        recipeName.includes(kw) || recipeCategory.includes(kw) || ingredients.some(i => i.toLowerCase().includes(kw))
+        recipeName.includes(kw) || recipeCategory.includes(kw) || ingredients.some(i => i.includes(kw))
       );
       if (containsMeat) {
         score -= 40;
@@ -205,7 +219,7 @@ function rankRecipes(recipes = [], preferences = {}) {
       }
     } else if (dietary === 'low-carb') {
       const highCarbKeywords = ['pasta', 'rice', 'bread', 'potato', 'sugar', 'flour', 'noodle'];
-      const hasCarb = highCarbKeywords.some(kw => recipeName.includes(kw) || ingredients.some(i => i.toLowerCase().includes(kw)));
+      const hasCarb = highCarbKeywords.some(kw => recipeName.includes(kw) || ingredients.some(i => i.includes(kw)));
       if (hasCarb) {
         score -= 20;
       } else {
@@ -215,7 +229,7 @@ function rankRecipes(recipes = [], preferences = {}) {
     }
 
     // 2. Ingredient Overlap Score
-    const matchAnalysis = calculateIngredientMatch(pantryIngredients, avoidedIngredients, ingredients);
+    const matchAnalysis = calculateIngredientMatch(pantryIngredients, avoidedIngredients, rawIngredients);
     score += (matchAnalysis.matchPercentage * 0.3); // max +30 points
 
     if (matchAnalysis.containsAvoided) {
