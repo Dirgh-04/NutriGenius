@@ -81,7 +81,6 @@ const handleHealthCheck = (req, res) => {
 /**
  * Health Check Endpoints
  */
-apiRouter.get('/', handleHealthCheck);
 apiRouter.get('/health', handleHealthCheck);
 app.get('/health', handleHealthCheck);
 app.get('/api/health', handleHealthCheck);
@@ -105,16 +104,30 @@ app.use((req, res, next) => {
     req.path.startsWith('/fruits') ||
     req.path.startsWith('/nutrition') ||
     req.path.startsWith('/meal-plans') ||
-    req.path === '/health' ||
-    req.path === '/'
+    req.path === '/health'
   ) {
     return apiRouter(req, res, next);
   }
   next();
 });
 
-// Serve static frontend files (for local node hosting)
+// Serve static frontend files (CSS, JS, Assets, HTML)
+app.use('/css', express.static(path.join(__dirname, '../frontend/css')));
+app.use('/js', express.static(path.join(__dirname, '../frontend/js')));
+app.use('/assets', express.static(path.join(__dirname, '../frontend/assets')));
 app.use(express.static(path.join(__dirname, '../frontend')));
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/login.html'));
+});
+
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/register.html'));
+});
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 
 // 404 Route Handler
 app.use((req, res) => {

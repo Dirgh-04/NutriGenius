@@ -2,7 +2,6 @@
   "name": "nutrigenius",
   "version": "1.0.0",
   "description": "NutriGenius — Understand Your Food. Make Better Choices.",
-  "main": "api/index.js",
   "scripts": {
     "start": "node backend/server.js",
     "test": "cd backend && npm test"
