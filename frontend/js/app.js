@@ -114,10 +114,11 @@ class NutriGeniusApp {
           throw new Error('Unexpected health response');
         }
       } catch (err) {
+        console.warn('[NutriGenius Health Check Error]:', err);
         this.isBackendOnline = false;
         pill.className = 'status-pill offline';
         text.textContent = 'Backend Offline';
-        pill.title = 'Backend unreachable on ' + window.api.baseUrl;
+        pill.title = `Backend unreachable on ${window.api.baseUrl}: ${err.message}`;
       }
     };
 

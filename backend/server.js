@@ -24,20 +24,7 @@ const allowedOrigins = (process.env.FRONTEND_ORIGIN || 'http://localhost:5500,ht
   .map(o => o.trim());
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, Postman, or same-origin)
-    if (!origin) return callback(null, true);
-    if (
-      allowedOrigins.includes(origin) ||
-      origin.endsWith('.vercel.app') ||
-      origin.includes('localhost') ||
-      origin.includes('127.0.0.1') ||
-      process.env.NODE_ENV === 'development'
-    ) {
-      return callback(null, true);
-    }
-    return callback(new Error('Blocked by CORS policy'));
-  },
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
