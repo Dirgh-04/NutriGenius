@@ -1,4 +1,7 @@
 # NutriGenius 🥗
+
+Website Link: https://nutri-genius-tau.vercel.app
+
 > **Understand Your Food. Make Better Choices.**
 
 NutriGenius is a personal food intelligence platform that helps users analyze packaged food products, compare nutritional values, discover healthy recipes, investigate fruit chemistry, track daily dietary intake, and plan balanced meals according to their goals and preferences.
